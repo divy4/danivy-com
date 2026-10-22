@@ -22,7 +22,7 @@ function getStatusIcon(game: Game): string {
 
 interface GameStatusProps {
   game: Game
-  onClick: () => Void
+  onClick: () => void
 }
 
 function GameStatus(props: GameStatusProps) {
