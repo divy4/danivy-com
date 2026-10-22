@@ -1,6 +1,7 @@
 FROM registry-1.docker.io/library/node:lts-trixie-slim as build
 COPY games-ui/ app/
 WORKDIR /app
+RUN yarn install
 RUN yarn build
 
 

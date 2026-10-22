@@ -3,7 +3,7 @@ import { getTime } from './util.tsx'
 
 interface TitleTimerProps {
   title: string
-  endTime: int | null
+  endTime: number | null
 }
 
 function TitleTimer(props: TitleTimerProps) {

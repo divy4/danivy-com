@@ -2,8 +2,8 @@ export class Game {
   name: string = ""
   enabled: boolean = false
   healthy: boolean = false
-  start_time: int | null = null
-  end_time: int | null = null
+  start_time: number | null = null
+  end_time: number | null = null
 }
 
 
