@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 from typing import List
 
 
-from .k8s import list_deployments, scale_deployment
+from .k8s import list_workloads, scale_workload
 from .models import Game
 from .runtime_tracker import RuntimeTracker
 from .util import get_time, to_human_time
@@ -25,14 +25,14 @@ _tracker: RuntimeTracker = RuntimeTracker()
 
 async def shutdown_games():
     """Shuts down any games running for a long time."""
-    deployments = await list_deployments()
-    width = max(len(x.metadata.name) for x in deployments)
+    workloads = await list_workloads()
+    width = max(len(x.metadata.name) for x in workloads)
 
     _logger.info("Checking game shutdown times...")
-    for deployment in deployments:
-        name = deployment.metadata.name
-        # Remove deployments that aren't active anymore
-        if not deployment.enabled():
+    for workload in workloads:
+        name = workload.metadata.name
+        # Remove workloads that aren't active anymore
+        if not workload.enabled():
             _logger.info(f"{name:<{width}} - inactive")
             _tracker.end(name)
             continue
@@ -48,7 +48,7 @@ async def shutdown_games():
 
         # Stop deployment
         if current >= end:
-            await scale_deployment(name=name, replicas=0)
+            await scale_workload(workload, replicas=0)
 
 
 @asynccontextmanager
@@ -71,11 +71,11 @@ async def list_games() -> List[Game]:
     """List all games."""
     _logger.info("Listing games...")
     games = []
-    for d in await list_deployments():
+    for workload in await list_workloads():
         start, end = None, None
-        if d.enabled():
-            start, end = _tracker.get(d.metadata.name)
-        games.append(Game.from_deployment(d, start, end))
+        if workload.enabled():
+            start, end = _tracker.get(workload.metadata.name)
+        games.append(Game.from_workload(workload, start, end))
     _logger.info(f"{len(games)} games found.")
     return games
 
@@ -84,8 +84,14 @@ async def list_games() -> List[Game]:
 async def start_game(name: str) -> None:
     """Start a game server."""
     _logger.info(f"Starting {name}...")
-    # Started >> more time, already running >> less time
-    if await scale_deployment(name, 1):
-        _tracker.start(name)
-    else:
-        _tracker.extend(name)
+    for workload in await list_workloads():
+        if workload.metadata.name != name:
+            continue
+        # Started >> more time, already running >> less time
+        if await scale_workload(workload, 1):
+            _tracker.start(name)
+        else:
+            _tracker.extend(name)
+        return
+    # Didn't find a workload with the right name
+    raise fastapi.HTTPException(status_code=404, detail="Game not found")
