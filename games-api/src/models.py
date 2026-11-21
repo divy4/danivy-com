@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, conint
 
 
 class DeploymentMetadata(BaseModel):
@@ -48,14 +48,15 @@ class Statefulset(BaseModel):
         """If the deployment is healthy."""
         return self.status.replicas == self.status.ready_replicas
 
+
 class Game(BaseModel):
     """The status of a game."""
 
     name: str = Field(..., description="The name of the game")
     enabled: bool = Field(..., description="If the game is enabled")
     healthy: bool = Field(..., description="If the game is healthy")
-    start_time: int | None = Field(None, description="When the game started.")
-    end_time: int | None = Field(None, description="When the game will end.")
+    start_time: int | None = Field(None, description="When the game started")
+    end_time: int | None = Field(None, description="When the game will end")
 
     @classmethod
     def from_workload(
@@ -73,3 +74,10 @@ class Game(BaseModel):
         else:
             raise RuntimeError(f"Unexpected type {type(obj)}")
 
+
+class WakeRequest(BaseModel):
+    """A request to wake a game."""
+
+    hours: conint(gt=0, lt=5) = Field(
+        ..., description="The number of hours to keep the game awake"
+    )
