@@ -18,7 +18,7 @@ export async function getGames() : Promise<Game[]> {
   return games
 }
 
-export async function wakeGame(game: Game, hours: int) : Promise<void> {
+export async function wakeGame(game: Game, hours: number) : Promise<void> {
   await fetch(`/api/v1/games/${game.name}/wake`, {
     method: "POST",
     headers: {
@@ -28,3 +28,4 @@ export async function wakeGame(game: Game, hours: int) : Promise<void> {
     body: JSON.stringify({hours: hours}),
   })
 }
+

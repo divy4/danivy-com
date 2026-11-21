@@ -29,7 +29,7 @@ function GameStatus(props: GameStatusProps) {
   const game : Game = props.game
   const onClickCallback = props.onClick
 
-  async function wake(hours: int) {
+  async function wake(hours: number) {
     wakeGame(game, hours)
     if (onClickCallback !== undefined) {
       await onClickCallback()

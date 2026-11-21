@@ -1,4 +1,6 @@
 FROM registry-1.docker.io/library/node:lts-trixie-slim as build
+RUN npm install -g corepack
+RUN corepack prepare yarn@stable --activate
 COPY games-ui/ app/
 WORKDIR /app
 RUN yarn install
