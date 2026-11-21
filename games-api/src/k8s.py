@@ -29,7 +29,9 @@ async def list_workloads() -> List[Deployment | Statefulset]:
     for obj_list in (list_deployments(), list_statefulsets()):
         for obj in await obj_list:
             if obj.metadata.name in names:
-                raise RuntimeError(f"Duplicate objects detected under name {obj.metadata.name}")
+                raise RuntimeError(
+                    f"Duplicate objects detected under name {obj.metadata.name}"
+                )
             names.add(obj.metadata.name)
             objects.append(obj)
     return objects
@@ -89,6 +91,7 @@ async def scale_workload(workload: Deployment | Statefulset, replicas: int) -> b
 async def _get_deployments() -> List[V1Deployment]:
     """Returns the deployments in the namespace."""
     return apps_v1.list_namespaced_deployment(namespace=NAMESPACE).items  # type: ignore
+
 
 async def _get_statefulsets() -> List[V1StatefulSet]:
     """Returns the deployments in the namespace."""

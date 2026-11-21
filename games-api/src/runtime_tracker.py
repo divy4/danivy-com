@@ -6,8 +6,6 @@ from typing import Dict, Tuple
 
 # 4 hours
 START_RUNTIME_SECONDS = int(os.getenv("START_RUNTIME_SECONDS", "14400"))
-# 2 hours
-EXTEND_RUNTIME_SECONDS = int(os.getenv("EXTEND_RUNTIME_SECONDS", "7200"))
 
 
 class RuntimeTracker:
@@ -31,21 +29,12 @@ class RuntimeTracker:
             self.__times[name] = (time, time + START_RUNTIME_SECONDS)
         return self.__times[name]
 
-    def start(self, name: str) -> None:
-        """Start a service."""
-        self.__extend(name, START_RUNTIME_SECONDS)
-
-    def extend(self, name: str) -> None:
+    def extend(self, name: str, seconds: int) -> None:
         """Extend a service's runtime."""
-        self.__extend(name, EXTEND_RUNTIME_SECONDS)
+        start, end = self.get(name)
+        self.__times[name] = (start, max(end, get_time() + seconds))
 
     def end(self, name: str) -> None:
         """End a service."""
         if name in self.__times:
             del self.__times[name]
-
-    def __extend(self, name: str, seconds: int) -> None:
-        """Extends a service's runtime, if now + seconds is greater than
-        the current end time."""
-        start, end = self.get(name)
-        self.__times[name] = (start, max(end, get_time() + seconds))

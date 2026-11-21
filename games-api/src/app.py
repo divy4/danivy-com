@@ -9,7 +9,7 @@ from typing import List
 
 
 from .k8s import list_workloads, scale_workload
-from .models import Game
+from .models import Game, WakeRequest
 from .runtime_tracker import RuntimeTracker
 from .util import get_time, to_human_time
 
@@ -80,18 +80,15 @@ async def list_games() -> List[Game]:
     return games
 
 
-@app.post("/api/v1/games/{name}/start")
-async def start_game(name: str) -> None:
+@app.post("/api/v1/games/{name}/wake")
+async def start_game(name: str, request: WakeRequest) -> None:
     """Start a game server."""
     _logger.info(f"Starting {name}...")
     for workload in await list_workloads():
         if workload.metadata.name != name:
             continue
-        # Started >> more time, already running >> less time
-        if await scale_workload(workload, 1):
-            _tracker.start(name)
-        else:
-            _tracker.extend(name)
+        await scale_workload(workload, 1)
+        _tracker.extend(name, request.hours * 3600)
         return
     # Didn't find a workload with the right name
     raise fastapi.HTTPException(status_code=404, detail="Game not found")
