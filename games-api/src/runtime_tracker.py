@@ -4,8 +4,8 @@ from .util import get_time
 
 from typing import Dict, Tuple
 
-# 4 hours
-START_RUNTIME_SECONDS = int(os.getenv("START_RUNTIME_SECONDS", "14400"))
+# 1 hour
+START_RUNTIME_SECONDS = int(os.getenv("START_RUNTIME_SECONDS", "3600"))
 
 
 class RuntimeTracker:
