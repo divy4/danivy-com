@@ -1,0 +1,7 @@
+.git/
+.nvim-session
+node_modules/
+venv/
+LICENSE
+Makefile
+README.md
