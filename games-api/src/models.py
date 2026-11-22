@@ -1,11 +1,25 @@
 from pydantic import BaseModel, Field, conint
 
+import json
+import os
 
-class DeploymentMetadata(BaseModel):
+PASSWORDS = json.loads(os.getenv("PASSWORDS", "{}"))
+
+
+class WorkloadAnnotations(BaseModel):
+    cloudflared_command: str | None = Field(
+        default=None, alias="danivy.com/help-cloudflared-command"
+    )
+
+
+class WorkloadMetadata(BaseModel):
     name: str
+    annotations: WorkloadAnnotations = Field(
+        default_factory=lambda: WorkloadAnnotations()
+    )
 
 
-class DeploymentStatus(BaseModel):
+class WorkloadStatus(BaseModel):
     replicas: int | None
     ready_replicas: int | None
 
@@ -13,11 +27,11 @@ class DeploymentStatus(BaseModel):
 class Deployment(BaseModel):
     """A K8s deployment."""
 
-    metadata: DeploymentMetadata
-    status: DeploymentStatus
+    metadata: WorkloadMetadata
+    status: WorkloadStatus
 
     def enabled(self) -> bool:
-        """If the deployment has a replica count > 0."""
+        """If the deployment hasa replica count > 0."""
         return self.status.replicas not in (0, None)
 
     def healthy(self) -> bool:
@@ -25,20 +39,11 @@ class Deployment(BaseModel):
         return self.status.replicas == self.status.ready_replicas
 
 
-class StatefulsetMetadata(BaseModel):
-    name: str
-
-
-class StatefulsetStatus(BaseModel):
-    replicas: int | None
-    ready_replicas: int | None
-
-
 class Statefulset(BaseModel):
     """A K8s statefulset."""
 
-    metadata: StatefulsetMetadata
-    status: StatefulsetStatus
+    metadata: WorkloadMetadata
+    status: WorkloadStatus
 
     def enabled(self) -> bool:
         """If the deployment has a replica count > 0."""
@@ -58,6 +63,12 @@ class Game(BaseModel):
     start_time: int | None = Field(None, description="When the game started")
     end_time: int | None = Field(None, description="When the game will end")
 
+    # Help
+    cloudflared_command: str | None = Field(
+        None, description="The command to connect cloudflared to the server"
+    )
+    password: str | None = Field(None, description="The server password")
+
     @classmethod
     def from_workload(
         cls, obj: Deployment | Statefulset, start_time: int | None, end_time: int | None
@@ -70,6 +81,9 @@ class Game(BaseModel):
                 healthy=obj.healthy(),
                 start_time=start_time,
                 end_time=end_time,
+                # Help
+                cloudflared_command=obj.metadata.annotations.cloudflared_command,
+                password=PASSWORDS.get(obj.metadata.name, None),
             )
         else:
             raise RuntimeError(f"Unexpected type {type(obj)}")
