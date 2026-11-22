@@ -4,6 +4,8 @@ export class Game {
   healthy: boolean = false
   start_time: number | null = null
   end_time: number | null = null
+  cloudflared_command: string | null = null
+  password: string | null = null
 }
 
 

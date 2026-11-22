@@ -29,6 +29,18 @@ function GameStatus(props: GameStatusProps) {
   const game : Game = props.game
   const onClickCallback = props.onClick
 
+  async function copy_cloudflared_command() {
+    if (game.cloudflared_command !== null) {
+      navigator.clipboard.writeText(game.cloudflared_command)
+    }
+  }
+
+  async function copy_password() {
+    if (game.password !== null) {
+      navigator.clipboard.writeText(game.password)
+    }
+  }
+
   async function wake(hours: number) {
     wakeGame(game, hours)
     if (onClickCallback !== undefined) {
@@ -43,12 +55,25 @@ function GameStatus(props: GameStatusProps) {
   return (
     <Container maxWidth="lg" style={style} className={game.enabled ? "game-row-enabled" : "game-row-disabled"}>
       <TitleTimer title={game.name} endTime={game.end_time}/>
-      <div className="game-spacer"/>
-      <Button variant="contained" onClick={() => wake(1)}>1hr</Button>
-      <Button variant="contained" onClick={() => wake(2)}>2hr</Button>
-      <Button variant="contained" onClick={() => wake(3)}>3hr</Button>
-      <Button variant="contained" onClick={() => wake(4)}>4hr</Button>
+      <div className="expanding-spacer"/>
+
+      {game.cloudflared_command !== null ? (
+        <Button variant="contained" onClick={copy_cloudflared_command}>Copy command</Button>
+      ) : null}
+
+      {game.password !== null ? (
+        <Button variant="contained" onClick={copy_password}>Copy password</Button>
+      ) : null}
+
+      <Container className="button-stack">
+        <Button variant="contained" onClick={() => wake(1)}>1hr</Button>
+        <Button variant="contained" onClick={() => wake(2)}>2hr</Button>
+        <Button variant="contained" onClick={() => wake(3)}>3hr</Button>
+        <Button variant="contained" onClick={() => wake(4)}>4hr</Button>
+      </Container>
+
       <img src={getStatusIcon(game)} className="game-status-icon"/>
+
     </Container>
   )
 }

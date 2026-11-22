@@ -44,8 +44,12 @@
   color: white;
 }
 
-.game-spacer {
+.expanding-spacer {
   flex: 1
+}
+
+.button-stack {
+  flex: 0
 }
 
 .game-status-icon {
